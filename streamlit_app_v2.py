@@ -15,7 +15,7 @@ from database import (
     update_transaction_category, delete_statement
 )
 
-# Categories for transaction classification
+# Categories for transaction classificationh
 CATEGORIES = {
       'MCA_DEBT': ['daily ach', 'merchant cash', 'fundbox', 'kabbage', 'ondeck', 'bluevine', 'credibly', 'rapid finance', 'forward financing', 'clearco', 'shopify capital'],
       'LOAN_PAYMENT': ['loan pmt', 'loan payment', 'sba loan', 'term loan', 'lending club', 'prosper', 'funding circle'],
@@ -43,11 +43,12 @@ def extract_transactions_from_pdf(pdf_file):
                               for page in pdf.pages:
                                                 full_text += page.extract_text() or ""
 
-                              lines = full_text.split('\n')
-                                  _pattern = r'(\d{1,2}[/-]\d{1,2}[/-]?\d{0,4})'
-                              amount_pattern = r'[\$]?([\d,]+\.\d{2})'
 
-                line in lines:
+                            lines = full_text.split('\n')
+                  date_pattern = r'(\d{1,2}/[\d{1,2}/)*]d{0,4})'
+                  amount_pattern = r'(\$)([,\d.]+\.\d{2})'
+
+                  for line in lines:
                               date_match = re.search(date_pattern, line)
                               amounts = re.findall(amount_pattern, line)
 
