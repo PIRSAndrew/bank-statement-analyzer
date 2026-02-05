@@ -17,18 +17,18 @@ from database import (
 
 # Categories for transaction classificationh
 CATEGORIES = {
-      'MCA_DEBT': ['daily ach', 'merchant cash', 'fundbox', 'kabbage', 'ondeck', 'bluevine', 'credibly', 'rapid finance', 'forward financing', 'clearco', 'shopify capital'],
-      'LOAN_PAYMENT': ['loan pmt', 'loan payment', 'sba loan', 'term loan', 'lending club', 'prosper', 'funding circle'],
-      'RENT': ['rent', 'lease', 'property mgmt', 'landlord'],
-      'PAYROLL': ['payroll', 'gusto', 'adp', 'paychex', 'quickbooks payroll', 'square payroll'],
-      'UTILITIES': ['electric', 'gas bill', 'water bill', 'utility', 'pge', 'edison', 'comcast', 'att', 'verizon'],
-      'INSURANCE': ['insurance', 'geico', 'allstate', 'progressive', 'state farm'],
-      'REVENUE': ['deposit', 'payment received', 'stripe', 'square', 'paypal', 'shopify', 'amazon payout', 'pos deposit'],
-      'TRANSFER_IN': ['transfer from', 'xfer from', 'mobile deposit'],
-      'TRANSFER_OUT': ['transfer to', 'xfer to', 'wire out'],
-      'TAX': ['irs', 'tax payment', 'estimated tax', 'state tax', 'franchise tax'],
-      'CREDIT_CARD': ['credit card', 'amex', 'chase card', 'visa payment', 'mastercard'],
-      'OTHER_EXPENSE': []
+    'MCA_DEBT': ['daily ach', 'merchant cash', 'fundbox', 'kabbage', 'ondeck', 'bluevine', 'credibly', 'rapid finance', 'forward financing', 'clearco', 'shopify capital'],
+    'LOAN_PAYMENT': ['loan pmt', 'loan payment', 'sba loan', 'term loan', 'lending club', 'prosper', 'funding circle'],
+    'RENT': ['rent', 'lease', 'property mgmt', 'landlord'],
+    'PAYROLL': ['payroll', 'gusto', 'adp', 'paychex', 'quickbooks payroll', 'square payroll'],
+    'UTILITIES': ['electric', 'gas bill', 'water bill', 'utility', 'pge', 'edison', 'comcast', 'att', 'verizon'],
+    'INSURANCE': ['insurance', 'geico', 'allstate', 'progressive', 'state farm'],
+    'REVENUE': ['deposit', 'payment received', 'stripe', 'square', 'paypal', 'shopify', 'amazon payout', 'pos deposit'],
+    'TRANSFER_IN': ['transfer from', 'xfer from', 'mobile deposit'],
+    'TRANSFER_OUT': ['transfer to', 'xfer to', 'wire out'],
+    'TAX': ['irs', 'tax payment', 'estimated tax', 'state tax', 'franchise tax'],
+    'CREDIT_CARD': ['credit card', 'amex', 'chase card', 'visa payment', 'mastercard'],
+    'OTHER_EXPENSE': []
 }
 
 
@@ -60,34 +60,32 @@ def extract_transactions_from_pdf(pdf_file):
         st.error(f"Error parsing PDF: {str(e)}")
     return transactions
 
-
 # ==================== CATEGORIZATION ====================
 
 def categorize_transaction(description, amount, user_patterns):
-      """Categorize transaction using learned patterns and categories"""
+    """Categorize transaction using learned patterns and categories"""
     desc_lower = description.lower()
 
     # Check learned patterns first (user has highest priority)
     for pattern in user_patterns:
-              if pattern.pattern.lower() in desc_lower:
-                            return pattern.category, pattern.confidence
+        if pattern.pattern.lower() in desc_lower:
+            return pattern.category, pattern.confidence
 
-          # Then check default categories
-          for category, patterns in CATEGORIES.items():
-                    for pattern in patterns:
-                                  if pattern in desc_lower:
-                                                    return category, 1.0
+    # Then check default categories
+    for category, patterns in CATEGORIES.items():
+        for pattern in patterns:
+            if pattern in desc_lower:
+                return category, 1.0
 
-                          # Default based on amount
-                          if amount > 0:
-                                    return 'REVENUE', 0.5
-                                return 'OTHER_EXPENSE', 0.5
-
+    # Default based on amount
+    if amount > 0:
+        return 'REVENUE', 0.5
+    return 'OTHER_EXPENSE', 0.5
 
 def calculate_score(transactions_list):
-      """Calculate financial health score"""
+    """Calculate financial health score"""
     if not transactions_list:
-              return 0
+        return 0
 
     df = pd.DataFrame(transactions_list)
     score = 100
@@ -96,10 +94,10 @@ def calculate_score(transactions_list):
     expenses = abs(df[df['amount'] < 0]['amount'].sum())
 
     if expenses > 0:
-              ratio = revenue / expenses
+        ratio = revenue / expenses
         if ratio < 1:
-                      score -= 30
-elif ratio < 1.5:
+            score -= 30
+        elif ratio < 1.5:
             score -= 15
 
     debt_categories = ['MCA_DEBT', 'LOAN_PAYMENT', 'CREDIT_CARD']
@@ -107,13 +105,13 @@ elif ratio < 1.5:
     debt_ratio = debt / revenue if revenue > 0 else 1
 
     if debt_ratio > 0.3:
-              score -= 25
-elif debt_ratio > 0.15:
+        score -= 25
+    elif debt_ratio > 0.15:
         score -= 12
 
     if df['amount'].std() > abs(df['amount'].mean()) * 2:
-              score -= 20
-elif df['amount'].std() > abs(df['amount'].mean()):
+        score -= 20
+    elif df['amount'].std() > abs(df['amount'].mean()):
         score -= 10
 
     nsf_count = len(df[df['description'].str.lower().str.contains('nsf|overdraft|insufficient', na=False)])
@@ -121,10 +119,9 @@ elif df['amount'].std() > abs(df['amount'].mean()):
 
     negative_count = len(df[df['amount'] < 0])
     if negative_count > len(df) * 0.7:
-              score -= 10
+        score -= 10
 
     return max(0, min(100, score))
-
 
 # ==================== UI SETUP ====================
 
@@ -135,7 +132,7 @@ init_auth_state()
 
 # Show login page if not authenticated
 if not is_authenticated():
-      render_auth_page()
+    render_auth_page()
     st.stop()
 
 # User is authenticated - show main app
@@ -143,7 +140,7 @@ st.title("🏦 Bank Statement Analyzer")
 
 # Sidebar
 with st.sidebar:
-      st.header("📊 Dashboard")
+    st.header("📊 Dashboard")
     render_user_menu()
 
     st.markdown("---")
@@ -158,13 +155,13 @@ with st.sidebar:
     new_category = st.selectbox("Assign to category:", list(CATEGORIES.keys()))
 
     if st.button("Add Pattern", use_container_width=True):
-              if new_pattern:
-                            db = SessionLocal()
-                            save_learned_pattern(db, st.session_state.user_id, new_pattern, new_category)
-                            db.close()
-                            st.success(f"✅ Learned: '{new_pattern}' → {new_category}")
-                            st.rerun()
-else:
+        if new_pattern:
+            db = SessionLocal()
+            save_learned_pattern(db, st.session_state.user_id, new_pattern, new_category)
+            db.close()
+            st.success(f"✅ Learned: '{new_pattern}' → {new_category}")
+            st.rerun()
+        else:
             st.error("❌ Please enter a pattern")
 
     # Show learned patterns
@@ -173,37 +170,36 @@ else:
     db.close()
 
     if learned_patterns:
-              st.markdown("**Learned Patterns:**")
+        st.markdown("**Learned Patterns:**")
         for pattern in learned_patterns:
-                      st.caption(f"'{pattern.pattern[:20]}...' → {pattern.category} (used {pattern.times_used}x)")
-
+            st.caption(f"'{pattern.pattern[:20]}...' → {pattern.category} (used {pattern.times_used}x)")
 # Main content area
 if uploaded_file:
-      st.subheader("📋 Analysis Results")
+    st.subheader("📋 Analysis Results")
 
     # Extract transactions
     transactions = extract_transactions_from_pdf(uploaded_file)
 
     if transactions:
-              # Get learned patterns for categorization
-              db = SessionLocal()
+        # Get learned patterns for categorization
+        db = SessionLocal()
         user_patterns = get_user_patterns(db, st.session_state.user_id)
 
         # Categorize transactions
         for txn in transactions:
-                      category, confidence = categorize_transaction(txn['description'], txn['amount'], user_patterns)
-                      txn['category'] = category
-                      txn['category_confidence'] = confidence
+            category, confidence = categorize_transaction(txn['description'], txn['amount'], user_patterns)
+            txn['category'] = category
+            txn['category_confidence'] = confidence
 
         # Save to database
         statement_data = {
-                      'statement_month': datetime.now().strftime("%Y-%m"),
-                      'total_transactions': len(transactions),
-                      'total_revenue': sum(t['amount'] for t in transactions if t['amount'] > 0),
-                      'total_expenses': abs(sum(t['amount'] for t in transactions if t['amount'] < 0)),
-                      'net_cash_flow': sum(t['amount'] for t in transactions),
-                      'health_score': calculate_score(transactions),
-                      'raw_data': transactions
+            'statement_month': datetime.now().strftime("%Y-%m"),
+            'total_transactions': len(transactions),
+            'total_revenue': sum(t['amount'] for t in transactions if t['amount'] > 0),
+            'total_expenses': abs(sum(t['amount'] for t in transactions if t['amount'] < 0)),
+            'net_cash_flow': sum(t['amount'] for t in transactions),
+            'health_score': calculate_score(transactions),
+            'raw_data': transactions
         }
 
         statement = create_statement(db, st.session_state.user_id, uploaded_file.name, statement_data)
@@ -230,41 +226,41 @@ if uploaded_file:
 
         st.success(f"✅ Statement saved! ID: {statement.id}")
         db.close()
-else:
+    else:
         st.warning("❌ No transactions found in PDF")
 
 else:
     st.info("👈 Upload a PDF bank statement to begin analysis")
 
-    # Show recent statements
-    db = SessionLocal()
-    recent_statements = get_user_statements(db, st.session_state.user_id)
+# Show recent statements
+db = SessionLocal()
+recent_statements = get_user_statements(db, st.session_state.user_id)
 
-    if recent_statements:
-              st.subheader("📚 Recent Statements")
+if recent_statements:
+    st.subheader("📚 Recent Statements")
 
-        for stmt in recent_statements[:5]:
-                      col1, col2, col3, col4, col5 = st.columns([3, 2, 2, 2, 1])
+    for stmt in recent_statements[:5]:
+        col1, col2, col3, col4, col5 = st.columns([3, 2, 2, 2, 1])
 
-            with col1:
-                              st.write(f"**{stmt.filename}**")
-                          with col2:
-                                            st.write(f"{stmt.upload_date.strftime('%Y-%m-%d')}")
-                                        with col3:
-                                                          st.write(f"${stmt.net_cash_flow:,.2f}")
-                                                      with col4:
-                                                                        st.write(f"Score: {stmt.health_score:.0f}/100")
-                                                                    with col5:
-                                                                                      if st.button("View", key=f"view_{stmt.id}"):
-                                                                                                            # Load and display this statement
-                                                                                                            transactions = get_statement_transactions(db, stmt.id)
-                                                                                                            df = pd.DataFrame([{
-                                                                                                                'date': t.date,
-                                                                                                                'description': t.description,
-                                                                                                                'amount': t.amount,
-                                                                                                                'category': t.category
-                                                                                                              } for t in transactions])
-                                                                                                            
-                    st.write(df)
+        with col1:
+            st.write(f"**{stmt.filename}**")
+        with col2:
+            st.write(f"{stmt.upload_date.strftime('%Y-%m-%d')}")
+        with col3:
+            st.write(f"${stmt.net_cash_flow:,.2f}")
+        with col4:
+            st.write(f"Score: {stmt.health_score:.0f}/100")
+        with col5:
+            if st.button("View", key=f"view_{stmt.id}"):
+                # Load and display this statement
+                transactions = get_statement_transactions(db, stmt.id)
+                df = pd.DataFrame([{
+                    'date': t.date,
+                    'description': t.description,
+                    'amount': t.amount,
+                    'category': t.category
+                } for t in transactions])
 
-    db.close()
+                st.write(df)
+
+db.close()
