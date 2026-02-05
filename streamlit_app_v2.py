@@ -43,11 +43,11 @@ def extract_transactions_from_pdf(pdf_file):
                               for page in pdf.pages:
                                                 full_text += page.extract_text() or ""
 
-                              lines = full_text.split('\n')
-                              date_pattern = r'(\d{1,2}[/-]\d{1,2}[/-]?\d{0,4})'
-                              amount_pattern = r'[\$]?([\d,]+\.\d{2})'
+                          lines = full_text.split('\n')
+                              _pattern = r'(\d{1,2}[/-]\d{1,2}[/-]?\d{0,4})'
+                          amount_pattern = r'[\$]?([\d,]+\.\d{2})'
 
-            for line in lines:
+            line in lines:
                               date_match = re.search(date_pattern, line)
                               amounts = re.findall(amount_pattern, line)
 
