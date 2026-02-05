@@ -35,34 +35,29 @@ CATEGORIES = {
 # ==================== PDF EXTRACTION ====================
 
 def extract_transactions_from_pdf(pdf_file):
-        """Extract transactions from PDF file"""
-        transactions = []
-        try:
-                    with pdfplumber.open(pdf_file) as pdf:
-                                    full_text = ""
-                                    for page in pdf.pages:
-                                                        full_text += page.extract_text() or ""
-
-46
-    lines = full_text.split('\n')
-                for line in lines:
-                                date_match = re.search(r'(\d{1,2}/[\d{1,2}/)*]d{0,4})', line)
-                                amounts = re.findall(r'(\$)([,\d.]+\.\d{2})', line)
-    
-                if date_match and amounts:
-                                    desc = re.sub(r'[\d\s/\$,.-]+', '', line)
-                                    desc = re.sub(r'  +', ' ', desc).strip()
-    
-                    if len(desc) > 3:
-                                            amount = float(amounts[-1][1].replace(',', ''))
-                                            transactions.append({
-                                                                        'date': date_match.group(1),
-                                                                        'description': desc[:50],
-                                                                        'amount': amount
-                                            })
-except Exception as e:
+    """Extract transactions from PDF file"""
+    transactions = []
+    try:
+        with pdfplumber.open(pdf_file) as pdf:
+            full_text = ""
+            for page in pdf.pages:
+                full_text += page.extract_text() or ""
+        lines = full_text.split('\n')
+        for line in lines:
+            date_match = re.search(r'(\d{1,2}/[\d{1,2}/)*]d{0,4})', line)
+            amounts = re.findall(r'(\$)([,\d.]+\.\d{2})', line)
+            if date_match and amounts:
+                desc = re.sub(r'[\d\s/\$,.-]+', '', line)
+                desc = re.sub(r'  +', ' ', desc).strip()
+                if len(desc) > 3:
+                    amount = float(amounts[-1][1].replace(',', ''))
+                    transactions.append({
+                        'date': date_match.group(1),
+                        'description': desc[:50],
+                        'amount': amount
+                    })
+    except Exception as e:
         st.error(f"Error parsing PDF: {str(e)}")
-
     return transactions
 
 
