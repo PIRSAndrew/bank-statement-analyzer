@@ -35,37 +35,30 @@ CATEGORIES = {
 # ==================== PDF EXTRACTION ====================
 
 def extract_transactions_from_pdf(pdf_file):
-      """Extract transactions from PDF file"""
-      transactions = []
-      try:
-                with pdfplumber.open(pdf_file) as pdf:
-                              full_text = ""
-                              for page in pdf.pages:
-                                                full_text += page.extract_text() or ""
+        """Extract transactions from PDF file"""
+        transactions = []
+        try:
+                    with pdfplumber.open(pdf_file) as pdf:
+                                    full_text = ""
+                                    for page in pdf.pages:
+                                                        full_text += page.extract_text() or ""
 
+        lines = full_text.split('\n')
+            for line in lines:
+                            date_match = re.search(r'(\d{1,2}/[\d{1,2}/)*]d{0,4})', line)
+                            amounts = re.findall(r'(\$)([,\d.]+\.\d{2})', line)
 
-                            lines = full_text.split('\n')
-                  date_pattern = r'(\d{1,2}/[\d{1,2}/)*]d{0,4})'
-                  amount_pattern = r'(\$)([,\d.]+\.\d{2})'
+            if date_match and amounts:
+                                desc = re.sub(r'[\d\s/\$,.-]+', '', line)
+                                desc = re.sub(r'  +', ' ', desc).strip()
 
-                  for line in lines:
-                              date_match = re.search(date_pattern, line)
-                              amounts = re.findall(amount_pattern, line)
-
-                if date_match and amounts:
-                                      desc = re.sub(date_pattern, '', line)
-                                      desc = re.sub(amount_pattern, '', desc).strip()
-
-                    if len(desc) > 3:
-                                              amount = float(amounts[-1].replace(',', ''))
-                                              if any(word in line.lower() for word in ['debit', 'withdrawal', 'payment', 'purchase', '-']):
-                                                                            amount = -abs(amount)
-
-                                              transactions.append({
-                                                  'date': date_match.group(1),
-                                                  'description': desc[:50],
-                                                  'amount': amount
-                                              })
+                if len(desc) > 3:
+                                        amount = float(amounts[-1][1].replace(',', ''))
+                                        transactions.append({
+                                                                    'date': date_match.group(1),
+                                                                    'description': desc[:50],
+                                                                    'amount': amount
+                                        })
 except Exception as e:
         st.error(f"Error parsing PDF: {str(e)}")
 
