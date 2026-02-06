@@ -8,9 +8,9 @@ from supabase import create_client, Client
 import os
 from database import SessionLocal, get_user, create_user, user_exists
 
-# Initialize Supabase client
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+# Initialize Supabase client - check st.secrets first, then env vars
+SUPABASE_URL = st.secrets.get("SUPABASE_URL", os.getenv("SUPABASE_URL", ""))
+SUPABASE_KEY = st.secrets.get("SUPABASE_KEY", os.getenv("SUPABASE_KEY", ""))
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     st.error("⚠️ Missing Supabase configuration. Please set SUPABASE_URL and SUPABASE_KEY environment variables.")
