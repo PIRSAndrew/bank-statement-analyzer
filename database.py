@@ -292,3 +292,8 @@ def delete_learned_pattern(db, pattern_id: int):
         db.commit()
         return True
     return False
+
+
+# Aliases for backward compatibility with streamlit_app_v2.py
+create_statement = save_statement
+add_transactions_bulk = save_transactions
