@@ -128,11 +128,11 @@ def is_authenticated():
 def require_auth():
     """Decorator-like function to require authentication"""
     if not is_authenticated():
-        render_login_page()
+        render_auth_page()
         st.stop()
 
 
-def render_login_page():
+def render_auth_page():
     """Render login/signup page"""
     st.title("🏦 Bank Statement Analyzer")
     st.subheader("Please log in or create an account")
